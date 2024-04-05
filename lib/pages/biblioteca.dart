@@ -34,6 +34,8 @@ class _BibliotecaState extends State<Biblioteca> {
     return Scaffold(
       appBar: AppBar(
         title: Text('Categorias de Livros', style: TextStyle(color: Colors.white),),
+        iconTheme: const IconThemeData(color: Colors.white),
+        backgroundColor: Colors.grey,
       ),
       body: Column(
         children: [
@@ -54,7 +56,7 @@ class _BibliotecaState extends State<Biblioteca> {
                   onPressed: () {
                     _searchBooks(searchController.text);
                   },
-                  child: Text('Pesquisar'),
+                  child: Text('Pesquisar', style: TextStyle(color: Colors.grey),),
                 ),
               ],
             ),
@@ -111,17 +113,16 @@ class _BibliotecaState extends State<Biblioteca> {
                   children: [
                     Container(
                       height: 120.0,
-                      width:  200.0,
+                      width:  150.0,
                       decoration: BoxDecoration(
                         image: DecorationImage(
                           image: NetworkImage(book.imageUrl),
-                          // fit: BoxFit.cover,
                           alignment: Alignment.center
                         ),
                       ),
                     ),
                     Padding(
-                      padding: EdgeInsets.all(8.0),
+                      padding: EdgeInsets.all(7.0),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -230,6 +231,7 @@ class Book {
   });
 
   factory Book.fromJson(Map<String, dynamic> json) {
+
     return Book(
       title: json['volumeInfo']['title'],
       author: json['volumeInfo']['authors'] != null
@@ -237,7 +239,7 @@ class Book {
           : 'Autor Desconhecido',
       imageUrl: json['volumeInfo']['imageLinks'] != null
           ? json['volumeInfo']['imageLinks']['thumbnail']
-          : 'https://via.placeholder.com/150',
+          : 'https://png.pngtree.com/png-vector/20230912/ourmid/pngtree-closed-and-open-books-background-png-image_9567348.png',
       synopsis: json['volumeInfo']['description'] != null
           ? json['volumeInfo']['description']
           : 'Sinopse não disponível',
