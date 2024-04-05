@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:library_books/pages/biblioteca.dart';
-import 'package:library_books/pages/meusLivros.dart';
+import 'package:biblioteca_livros/pages/biblioteca.dart';
+import 'package:biblioteca_livros/pages/meusLivros.dart';
+
 
 void main() {
   runApp(const MyApp());

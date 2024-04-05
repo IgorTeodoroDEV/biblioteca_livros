@@ -22,30 +22,58 @@ class Biblioteca extends StatefulWidget {
 
 class _BibliotecaState extends State<Biblioteca> {
   Map<String, List<Book>> categorizedBooks = {};
+  TextEditingController searchController = TextEditingController();
 
   @override
   void initState() {
     super.initState();
-    _searchBooks("flutter");
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Categorias de Livros'),
+        title: Text('Categorias de Livros', style: TextStyle(color: Colors.white),),
       ),
-      body: ListView(
-        padding: EdgeInsets.all(16.0),
-        children: categorizedBooks.keys.map((categoryName) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildCategory(categoryName),
-              _buildSlideshow(categorizedBooks[categoryName]!),
-            ],
-          );
-        }).toList(),
+      body: Column(
+        children: [
+          Padding(
+            padding: EdgeInsets.all(16.0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: searchController,
+                    decoration: InputDecoration(
+                      hintText: 'Pesquisar Livros...',
+                    ),
+                  ),
+                ),
+                SizedBox(width: 10),
+                ElevatedButton(
+                  onPressed: () {
+                    _searchBooks(searchController.text);
+                  },
+                  child: Text('Pesquisar'),
+                ),
+              ],
+            ),
+          ),
+          Expanded(
+            child: ListView(
+              padding: EdgeInsets.all(16.0),
+              children: categorizedBooks.keys.map((categoryName) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    _buildCategory(categoryName),
+                    _buildSlideshow(categorizedBooks[categoryName]!),
+                  ],
+                );
+              }).toList(),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -83,11 +111,12 @@ class _BibliotecaState extends State<Biblioteca> {
                   children: [
                     Container(
                       height: 120.0,
-                      width: 120.0,
+                      width:  200.0,
                       decoration: BoxDecoration(
                         image: DecorationImage(
                           image: NetworkImage(book.imageUrl),
-                          fit: BoxFit.cover,
+                          // fit: BoxFit.cover,
+                          alignment: Alignment.center
                         ),
                       ),
                     ),
@@ -120,24 +149,41 @@ class _BibliotecaState extends State<Biblioteca> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Adicionar aos Favoritos'),
-          content: Text('Deseja adicionar "${book.title}" aos favoritos?'),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('Cancelar'),
+        return SingleChildScrollView(
+          child: AlertDialog(
+            title: Text('${book.title}'),
+            content: Column(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(15.0),
+                  child: Image(image: NetworkImage(book.imageUrl)),
+                ),
+                Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: Text('Sinopse', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),),
+                ),
+                Text('${book.synopsis}'),
+                Padding(padding: const EdgeInsets.only(top: 20.0),
+                child: Text('Deseja adicionar este livro aos favoritos?', style: TextStyle(fontWeight: FontWeight.bold),),
+                )
+              ],
             ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-                // Adicione a lógica para adicionar aos favoritos aqui
-              },
-              child: Text('Adicionar'),
-            ),
-          ],
+            actions: <Widget>[
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                child: Text('Cancelar', style: TextStyle(fontSize: 17, color: const Color.fromARGB(255, 250, 77, 64)) ,),
+              ),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                  // Adicione a lógica para adicionar aos favoritos aqui
+                },
+                child: Text('Adicionar', style: TextStyle(fontSize: 17, color: Colors.green),),
+              ),
+            ],
+          ),
         );
       },
     );
@@ -172,12 +218,14 @@ class Book {
   final String title;
   final String author;
   final String imageUrl;
+  final String synopsis; // Adicionando campo para a sinopse
   final List<String>? categories;
 
   Book({
     required this.title,
     required this.author,
     required this.imageUrl,
+    required this.synopsis,
     this.categories,
   });
 
@@ -190,6 +238,9 @@ class Book {
       imageUrl: json['volumeInfo']['imageLinks'] != null
           ? json['volumeInfo']['imageLinks']['thumbnail']
           : 'https://via.placeholder.com/150',
+      synopsis: json['volumeInfo']['description'] != null
+          ? json['volumeInfo']['description']
+          : 'Sinopse não disponível',
       categories: json['volumeInfo']['categories'] != null
           ? List<String>.from(json['volumeInfo']['categories'])
           : null,
@@ -199,7 +250,8 @@ class Book {
 
 class GoogleBooksAPI {
   static Future<List<Book>> searchBooks(String query) async {
-    final String apiUrl = 'https://www.googleapis.com/books/v1/volumes?q=$query';
+    final String apiUrl =
+        'https://www.googleapis.com/books/v1/volumes?q=$query';
 
     final response = await http.get(Uri.parse(apiUrl));
 
