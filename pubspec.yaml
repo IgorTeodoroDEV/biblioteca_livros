@@ -37,6 +37,8 @@ dependencies:
   cupertino_icons: ^1.0.2
   http: ^0.13.5
   google_books_api: ^1.0.1
+  sqflite: ^2.3.3
+  path: ^1.9.0
 
 dev_dependencies:
   flutter_test:

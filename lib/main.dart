@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:biblioteca_livros/pages/biblioteca.dart';
 import 'package:biblioteca_livros/pages/meusLivros.dart';
 
-
 void main() {
   runApp(const MyApp());
 }
@@ -80,7 +79,7 @@ class MyHomePage extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => meusLivros()),
+                  MaterialPageRoute(builder: (context) => MyBooks()),
                 );
               },
             ),

@@ -1,3 +1,5 @@
+import 'package:biblioteca_livros/models/favorites.dart';
+import 'package:biblioteca_livros/service/sqlite_service.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -24,16 +26,23 @@ class _BibliotecaState extends State<Biblioteca> {
   Map<String, List<Book>> categorizedBooks = {};
   TextEditingController searchController = TextEditingController();
 
+  late SqliteService _sqliteService;
+
   @override
   void initState() {
     super.initState();
+    _sqliteService = SqliteService();
+    _sqliteService.initializeDB();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Categorias de Livros', style: TextStyle(color: Colors.white),),
+        title: Text(
+          'Categorias de Livros',
+          style: TextStyle(color: Colors.white),
+        ),
         iconTheme: const IconThemeData(color: Colors.white),
         backgroundColor: Colors.grey,
       ),
@@ -56,7 +65,10 @@ class _BibliotecaState extends State<Biblioteca> {
                   onPressed: () {
                     _searchBooks(searchController.text);
                   },
-                  child: Text('Pesquisar', style: TextStyle(color: Colors.grey),),
+                  child: Text(
+                    'Pesquisar',
+                    style: TextStyle(color: Colors.grey),
+                  ),
                 ),
               ],
             ),
@@ -105,38 +117,39 @@ class _BibliotecaState extends State<Biblioteca> {
             padding: EdgeInsets.all(8.0),
             child: GestureDetector(
               onTap: () {
-                _addToFavorites(context, book);
+                _addToFavorites(context, book, index);
               },
               child: Card(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      height: 120.0,
-                      width:  150.0,
-                      decoration: BoxDecoration(
-                        image: DecorationImage(
-                          image: NetworkImage(book.imageUrl),
-                          alignment: Alignment.center
+                child: Expanded(
+                  flex: 2,
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        height: 120.0,
+                        width: 150.0,
+                        decoration: BoxDecoration(
+                          image: DecorationImage(
+                              image: NetworkImage(book.imageUrl),
+                              alignment: Alignment.center),
                         ),
                       ),
-                    ),
-                    Padding(
-                      padding: EdgeInsets.all(7.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            book.title,
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
+                      Padding(
+                        padding: EdgeInsets.all(7.0),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              book.title,
+                              style: TextStyle(
+                                  fontWeight: FontWeight.bold),
                             ),
-                          ),
-                          Text(book.author),
-                        ],
+                            Text(book.author),
+                          ],
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -146,7 +159,7 @@ class _BibliotecaState extends State<Biblioteca> {
     );
   }
 
-  void _addToFavorites(BuildContext context, Book book) {
+  void _addToFavorites(BuildContext context, Book book, index) {
     showDialog(
       context: context,
       builder: (BuildContext context) {
@@ -161,11 +174,18 @@ class _BibliotecaState extends State<Biblioteca> {
                 ),
                 Padding(
                   padding: const EdgeInsets.all(10.0),
-                  child: Text('Sinopse', style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),),
+                  child: Text(
+                    'Sinopse',
+                    style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold),
+                  ),
                 ),
                 Text('${book.synopsis}'),
-                Padding(padding: const EdgeInsets.only(top: 20.0),
-                child: Text('Deseja adicionar este livro aos favoritos?', style: TextStyle(fontWeight: FontWeight.bold),),
+                Padding(
+                  padding: const EdgeInsets.only(top: 20.0),
+                  child: Text(
+                    'Deseja adicionar este livro aos favoritos?',
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
                 )
               ],
             ),
@@ -174,14 +194,31 @@ class _BibliotecaState extends State<Biblioteca> {
                 onPressed: () {
                   Navigator.of(context).pop();
                 },
-                child: Text('Cancelar', style: TextStyle(fontSize: 17, color: const Color.fromARGB(255, 250, 77, 64)) ,),
+                child: Text(
+                  'Cancelar',
+                  style: TextStyle(
+                      fontSize: 17,
+                      color: const Color.fromARGB(255, 250, 77, 64)),
+                ),
               ),
               TextButton(
                 onPressed: () {
                   Navigator.of(context).pop();
-                  // Adicione a lógica para adicionar aos favoritos aqui
+                  _sqliteService.createItem(Favorite(
+                      id: index,
+                      name: book.title,
+                      sinopse: book.synopsis,
+                      img: book.imageUrl));
+                  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(
+                        '${book?.title ?? ""} foi adicionado aos favoritos.'),
+                    duration: Duration(seconds: 2),
+                  ));
                 },
-                child: Text('Adicionar', style: TextStyle(fontSize: 17, color: Colors.green),),
+                child: Text(
+                  'Adicionar',
+                  style: TextStyle(fontSize: 17, color: Colors.green),
+                ),
               ),
             ],
           ),
@@ -231,7 +268,6 @@ class Book {
   });
 
   factory Book.fromJson(Map<String, dynamic> json) {
-
     return Book(
       title: json['volumeInfo']['title'],
       author: json['volumeInfo']['authors'] != null
