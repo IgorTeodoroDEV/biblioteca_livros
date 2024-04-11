@@ -1,6 +1,11 @@
 # biblioteca_livros
 
-A new Flutter project.
+Projeto desenvolvido em flutter par a aula de Mobile II da Fatec de itapira
+
+Grupo
+Luan Garcia
+Igor Teodoro
+Gustavo Ornaghi
 
 ## Getting Started
 
